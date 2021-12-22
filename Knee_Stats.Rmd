@@ -22,6 +22,7 @@ library(nlme)
 library(tidyverse)
 library(readxl)
 library(data.table)
+
 ```
 
 
@@ -48,7 +49,7 @@ Station6
 Station7
 Station8
 
-## Compentency Checklist for injury side and non-injury side. 1 = completed 0 = not completed 
+## Competency Checklist for injury side and non-injury side. 1 = completed 0 = not completed 
 Valgus1Injury
 Valgus2Injury
 Valgus3Injury
@@ -91,6 +92,70 @@ Lever3NonInjury
 6. PreviousDiagnostic
 
 
+# Import Predata and add station key
+Station 1 - MCL
+Station 2 - LCL
+Station 3 - PCL
+Station 4 - No Injury (Sham)
+Station 5 - ACL, LCL
+Station 6 - ACL, PCL
+Station 7 - ACL
+Station 8 - ACL, MCL
+
+```{r}
+PreData = read_excel('PreData.xlsx')
+# Diagnosis Key
+PreData$Station1Key = 'MCL'
+PreData$Station2Key = 'LCL'
+PreData$Station3Key = 'PCL'
+PreData$Station4Key = 'No Injury'
+PreData$Station5Key = 'ACL, LCL'
+PreData$Station6Key = 'ACL, PCL'
+PreData$Station7Key = 'ACL'
+PreData$Station8Key = 'ACL, MCL'
+```
+
+## Make avg scores of diagnosis and compentency checklist
+
+```{r}
+# Diagnosis check
+PreData$Station1Result = with(PreData, Station1 == Station1Key)
+PreData$Station2Result = with(PreData, Station2 == Station2Key)
+PreData$Station3Result = with(PreData, Station3 == Station3Key)
+PreData$Station4Result = with(PreData, Station4 == Station4Key)
+PreData$Station5Result = with(PreData, Station5 == Station5Key)
+PreData$Station6Result = with(PreData, Station6 == Station6Key)
+PreData$Station7Result = with(PreData, Station7 == Station7Key)
+PreData$Station8Result = with(PreData, Station8 == Station8Key)
+
+# Create avg station diagnosis accuracy
+Result.list = colnames(dplyr::select(PreData,Station1Result:Station8Result))
+PreData$Pre.Station.Avg = rowSums(PreData[Result.list], na.rm = TRUE)/length(Result.list)
+  
+# Create Checklist avg
+Result.list = colnames(dplyr::select(PreData,Valgus1Injury:Lever3NonInjury))
+PreData$Pre.Competency.Avg = rowSums(PreData[Result.list], na.rm = TRUE)/length(Result.list)
+
+# Create avg score for all measures
+Measures = c('Valgus', 'Varus', 'Lach', 'PD', 'AD', 'Lever')
+PreData$Pre.Valgus.Avg = NA
+PreData$Pre.Varus.Avg = NA
+PreData$Pre.Lach.Avg = NA
+PreData$Pre.PD.Avg = NA
+PreData$Pre.AD.Avg = NA
+PreData$Pre.Lever.Avg = NA
+for (M in Measures) {
+  measure1 = paste0(M, '1Injury')
+  measure2 = paste0(M, '3NonInjury')
+  colTitle = paste0('Pre.',M, '.Avg')
+  Result.list = colnames(dplyr::select(PreData,all_of(measure1): all_of(measure2)))
+  PreData[colTitle] = rowSums(PreData[Result.list], na.rm = TRUE)/length(Result.list)
+}
+```
+
+
+## Import PostData
+__________________________________________
 # Post data sheet
 Subject
 ## 1.	I feel prepared to perform the following diagnostic knee examination techniques - Compare to same questions from Pre
@@ -114,7 +179,7 @@ Station6
 Station7
 Station8
 
-## Compentency Checklist for injury side and non-injury side. 1 = completed 0 = not completed 
+## Compentency Checklist for injury side and non-injury side. 1 = completed 0 = not completed or incorrect
 Valgus1Injury
 Valgus1Injury
 Valgus2Injury
@@ -160,37 +225,143 @@ Lever3NonInjury
 8. Retained
 9. Transferable
 
-# Import data and add station key
-Station 1 - MCL
-Station 2 - LCL
-Station 3 - PCL
-Station 4 - No Injury (Sham)
-Station 5 - ACL, LCL
-Station 6 - ACL, PCL
-Station 7 - ACL
-Station 8 - ACL, MCL
 
 ```{r}
-PreData = read_excel('PreData.xlsx')
-PreData$Station1Key = 'MCL'
-PreData$Station2Key = 'LCL'
-PreData$Station3Key = 'PCL'
-PreData$Station4Key = 'No Injury'
-PreData$Station5Key = 'ACL, LCL'
-PreData$Station6Key = 'ACL, PCL'
-PreData$Station7Key = 'ACL'
-PreData$Station8Key = 'ACL, MCL'
+PostData = read_excel('PostData.xlsx')
+# Diagnosis Key
+PostData$Station1Key = 'MCL'
+PostData$Station2Key = 'LCL'
+PostData$Station3Key = 'PCL'
+PostData$Station4Key = 'No Injury'
+PostData$Station5Key = 'ACL, LCL'
+PostData$Station6Key = 'ACL, PCL'
+PostData$Station7Key = 'ACL'
+PostData$Station8Key = 'ACL, MCL'
+```
 
-x = c('Station1', 'Station2', 'Station3', 'Station4', 'Station5', 'Station6', 'Station7', 'Station8',
-      'Station1Key', 'Station2Key', 'Station3Key', 'Station4Key', 'Station5Key', 'Station6Key', 'Station7Key', 'Station8Key')
-PreData[x] = lapply(PreData[x], factor)
-# 
-# model.matrix(PreData[, 11:18])
+## Make avg scores of diagnosis and compentency checklist
+
+```{r}
+# Diagnosis check
+PostData$Station1Result = with(PostData, Station1 == Station1Key)
+PostData$Station2Result = with(PostData, Station2 == Station2Key)
+PostData$Station3Result = with(PostData, Station3 == Station3Key)
+PostData$Station4Result = with(PostData, Station4 == Station4Key)
+PostData$Station5Result = with(PostData, Station5 == Station5Key)
+PostData$Station6Result = with(PostData, Station6 == Station6Key)
+PostData$Station7Result = with(PostData, Station7 == Station7Key)
+PostData$Station8Result = with(PostData, Station8 == Station8Key)
+
+# Create avg station diagnosis accuracy
+Result.list = colnames(dplyr::select(PostData,Station1Result:Station8Result))
+PostData$Post.Station.Avg = rowSums(PostData[Result.list], na.rm = TRUE)/length(Result.list)
+  
+# Create Checklist avg
+Result.list = colnames(dplyr::select(PostData,Valgus1Injury:Lever3NonInjury))
+PostData$Post.Competency.Avg = rowSums(PostData[Result.list], na.rm = TRUE)/length(Result.list)
+
+# Create avg score for all measures
+Measures = c('Valgus', 'Varus', 'Lach', 'PD', 'AD', 'Lever')
+PostData$Post.Valgus.Avg = NA
+PostData$Post.Varus.Avg = NA
+PostData$Post.Lach.Avg = NA
+PostData$Post.PD.Avg = NA
+PostData$Post.AD.Avg = NA
+PostData$Post.Lever.Avg = NA
+for (M in Measures) {
+  measure1 = paste0(M, '1Injury')
+  measure2 = paste0(M, '3NonInjury')
+  colTitle = paste0('Post.',M, '.Avg')
+  Result.list = colnames(dplyr::select(PostData,all_of(measure1): all_of(measure2)))
+  PostData[colTitle] = rowSums(PostData[Result.list], na.rm = TRUE)/length(Result.list)
+}
+```
+
+## Merge Pre and Post data sets
+
+```{r}
+# Prep Data for merge
+# Prenames = colnames(PreData)
+# Postnames = colnames(PostData)
+# intersect(Prenames, Postnames)
+# PreData$Group = factor('Pre')
+# PostData$Group = factor('Post')
+
+setnames(PreData, c('CurrentKnowledge', "ClinicalSetting",  "FutureCareer"), 
+                    c('Pre.CurrentKnowledge',"Pre.ClinicalSetting",  "Pre.FutureCareer"))
+
+setnames(PreData, c("PreValgus","PreVarus","PreLach","PrePD","PreAD","PreLever"), 
+         c("Pre.Valgus","Pre.Varus","Pre.Lach","Pre.PD","Pre.AD","Pre.Lever"))
+
+setnames(PostData, c("PostValgus","PostVarus","PostLach","PostPD","PostAD", "PostLever" ),
+         c("Post.Valgus","Post.Varus","Post.Lach","Post.PD","Post.AD", "Post.Lever"))
+
+setnames(PostData, c('CurrentKnowledge', "ClinicalSetting",  "FutureCareer"), 
+                    c('Post.CurrentKnowledge',"Post.ClinicalSetting",  "Post.FutureCareer"))
+
+PreVars = c("Subject","Pre.Valgus","Pre.Varus","Pre.Lach","Pre.PD","Pre.AD","Pre.Lever","Pre.CurrentKnowledge", "Pre.ClinicalSetting","Pre.FutureCareer",
+            "Pre.Station.Avg","Pre.Competency.Avg","Pre.Valgus.Avg","Pre.Varus.Avg","Pre.Lach.Avg","Pre.PD.Avg","Pre.AD.Avg","Pre.Lever.Avg",
+            "PreviousThiel","PreviousDiagnostic")
+
+PostVar = c( "Subject","Post.Valgus","Post.Varus","Post.Lach","Post.PD","Post.AD", "Post.Lever","Post.CurrentKnowledge", "Post.ClinicalSetting",
+             "Post.FutureCareer", "Post.Station.Avg","Post.Competency.Avg","Post.Valgus.Avg","Post.Varus.Avg","Post.Lach.Avg","Post.PD.Avg",
+             "Post.AD.Avg","Post.Lever.Avg","GainedNew","Improved","Effective","Retained","Transferable")
+
+
+Data = merge (PreData[PreVars], PostData[PostVar], by = 'Subject')
+
+# replace N/A with NA
+Data[Data=='N/A'] = NA
+
+Data = as.data.frame(lapply(Data, as.numeric))
+# colnames(Data_Long)
+# Pivot Longer
+Data_Long = pivot_longer(Data, 
+                         cols = Pre.Valgus:Pre.Lever.Avg,
+                         names_to = c('Group',"Measure"), 
+                         names_sep = 4, 
+                         values_to = 'Score')
+
+Data_Long2 = pivot_longer(Data, 
+                         cols = Post.Valgus:Post.Lever.Avg,
+                         names_to = c('Group',"Measure"), 
+                         names_sep = 5, 
+                         values_to = 'Score')
+
+Data_Long = merge(Data_Long[c('Subject','Group', 'Measure', 'Score')], Data_Long2[c('Subject','Group', 'Measure', 'Score')], all = TRUE)
+rm(Data_Long2)
+
+
+Data_Long$Group = factor(gsub('\\.', '', Data_Long$Group), levels = c('Pre', 'Post'))
+```
+
+## Statstical Anlaysis
+
+### Survey Results Change
+```{r}
+# Valgus
+# plot
+dplyr::filter(Data_Long, Measure == 'Valgus') %>%
+  ggplot( aes(x=Measure, y=Score, group = Group, color = Group)) +
+    geom_boxplot() +
+    # geom_jitter( size=0.4) +
+    theme(classic,
+      legend.position="none") +
+    ggtitle("A boxplot with jitter") +
+    xlab("")
+
+t.test(Data$Pre.Valgus, Data$Pre.Valgus,  paired = TRUE)
 ```
 
 
+### Diagnosis Results Change
 
+### Correlations
 
+#### Measure performance change with survey performance change
+e.g. (preVarugs - PostVargus) correlate with (PreVargus.Avg - PostVargus.Avg)
 
+## Stand Alone Measures: 
 
-
+Pre= "PreviousThiel","PreviousDiagnostic" 
+post =  "GainedNew","Improved", "Effective","Retained","Transferable"
