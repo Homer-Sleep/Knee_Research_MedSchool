@@ -1,0 +1,196 @@
+---
+title: "Knee_Stats"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(plyr)
+#library(papeR)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+library(tidyr)
+# library(foreign)
+# library(multcomp)
+# library(broom)
+library(nlme)
+library(tidyverse)
+library(readxl)
+library(data.table)
+```
+
+
+# Pre data sheet
+Subject
+## 1.I feel prepared to perform the following diagnostic knee examination techniques
+  PreValgus 
+  PreVarus
+  PreLach
+  PrePD
+  PreAD
+  PreLever
+2. CurrentKnowledge
+3. ClinicalSetting
+5. FutureCareer
+
+## Station Diagnostic responses:
+Station1
+Station2
+Station3
+Station4
+Station5
+Station6
+Station7
+Station8
+
+## Compentency Checklist for injury side and non-injury side. 1 = completed 0 = not completed 
+Valgus1Injury
+Valgus2Injury
+Valgus3Injury
+Valgus1NonInjury
+Valgus2NonInjury
+Valgus3NonInjury
+Varus1Injury
+Varus2Injury
+Varus3Injury
+Varus1NonInjury
+Varus2NonInjury
+Varus3NonInjury
+Lach1Injury
+Lach2Injury
+Lach3Injury
+Lach1NonInjury
+Lach2NonInjury
+Lach3NonInjury
+PD1Injury
+PD2Injury
+PD3Injury
+PD1NonInjury
+PD2NonInjury
+PD3NonInjury
+AD1Injury
+AD2Injury
+AD3Injury
+AD1NonInjury
+AD2NonInjury
+AD3NonInjury
+Lever1Injury
+Lever2Injury
+Lever3Injury
+Lever1NonInjury
+Lever2NonInjury
+Lever3NonInjury
+
+## Stand alone quesitons, previous experience questions:
+4. PreviousThiel
+6. PreviousDiagnostic
+
+
+# Post data sheet
+Subject
+## 1.	I feel prepared to perform the following diagnostic knee examination techniques - Compare to same questions from Pre
+PostValgus
+PostVarus
+PostLach
+PostPD
+PostAD
+PostLever
+
+6. CurrentKnowledge
+9. ClinicalSetting
+7. FutureCareer
+## Station Diagnostic responses:
+Station1
+Station2
+Station3
+Station4
+Station5
+Station6
+Station7
+Station8
+
+## Compentency Checklist for injury side and non-injury side. 1 = completed 0 = not completed 
+Valgus1Injury
+Valgus1Injury
+Valgus2Injury
+Valgus3Injury
+Valgus1NonInjury
+Valgus2NonInjury
+Valgus3NonInjury
+Varus1Injury
+Varus2Injury
+Varus3Injury
+Varus1NonInjury
+Varus2NonInjury
+Varus3NonInjury
+Lach1Injury
+Lach2Injury
+Lach3Injury
+Lach1NonInjury
+Lach2NonInjury
+Lach3NonInjury
+PD1Injury
+PD2Injury
+PD3Injury
+PD1NonInjury
+PD2NonInjury
+PD3NonInjury
+AD1Injury
+AD2Injury
+AD3Injury
+AD1NonInjury
+AD2NonInjury
+AD3NonInjury
+Lever1Injury
+Lever2Injury
+Lever3Injury
+Lever1NonInjury
+Lever2NonInjury
+Lever3NonInjury
+
+## Stand alone quesitons, previous experience questions:
+2. GainedNew
+3. Improved
+4. Effective
+8. Retained
+9. Transferable
+
+# Import data and add station key
+Station 1 - MCL
+Station 2 - LCL
+Station 3 - PCL
+Station 4 - No Injury (Sham)
+Station 5 - ACL, LCL
+Station 6 - ACL, PCL
+Station 7 - ACL
+Station 8 - ACL, MCL
+
+```{r}
+PreData = read_excel('PreData.xlsx')
+PreData$Station1Key = 'MCL'
+PreData$Station2Key = 'LCL'
+PreData$Station3Key = 'PCL'
+PreData$Station4Key = 'No Injury'
+PreData$Station5Key = 'ACL, LCL'
+PreData$Station6Key = 'ACL, PCL'
+PreData$Station7Key = 'ACL'
+PreData$Station8Key = 'ACL, MCL'
+
+x = c('Station1', 'Station2', 'Station3', 'Station4', 'Station5', 'Station6', 'Station7', 'Station8',
+      'Station1Key', 'Station2Key', 'Station3Key', 'Station4Key', 'Station5Key', 'Station6Key', 'Station7Key', 'Station8Key')
+PreData[x] = lapply(PreData[x], factor)
+# 
+# model.matrix(PreData[, 11:18])
+```
+
+
+
+
+
+
+
