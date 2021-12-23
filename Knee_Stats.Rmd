@@ -7,7 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r, echo=FALSE}
 library(plyr)
 #library(papeR)
 library(dplyr)
@@ -23,6 +23,76 @@ library(tidyverse)
 library(readxl)
 library(data.table)
 
+myboxplot = function(x, type = 'Survey'){
+  if(endsWith(x, '.Avg')){
+    type = 'Diagnosis'
+  }
+    print(ggplot(dplyr::filter(Data_Long, Measure == x), aes(x=Group, y=Score,  fill = Group)) +
+    geom_boxplot() +
+    # geom_jitter( size=0.4) +
+  geom_dotplot(binaxis='y', stackdir='center',  dotsize=.9, fill = 'grey')+
+ labs(title = paste(str_remove(x, '.Avg'), type))+
+   # if type == 'Survey'
+scale_y_continuous(limits = c(1,10),breaks=seq(2,10,2))+
+  # else
+  scale_y_continuous(limits = c(0,1),breaks=seq(.2,1,.2))+
+  ylab('Percentage')+
+  
+   theme_classic()+
+  theme(plot.title = element_text(color= 'black',face='bold',size=18))+
+   theme(axis.title.x = element_text(color= 'black',face='bold',size=18),
+        axis.text.x = element_text(color= 'black',face='bold',size=18))+
+  theme(axis.title.y = element_text(color= 'black',face='bold',size=18),
+        axis.text.y = element_text(color= 'black',face='bold',size=18))+
+ theme(legend.text = element_text( size = 18, face = "bold"))+
+theme(legend.position="none")+
+    theme(# adjust X-axis labels; also adjust their position using margin (acts like a bounding box)
+          # using margin was needed because of the inwards placement of ticks
+          # http://stackoverflow.com/questions/26367296/how-do-i-make-my-axis-ticks-face-inwards-in-ggplot2
+          axis.text.x = element_text( margin = unit(c(t = 2.5, r = 0, b = 0, l = 0), "mm")),
+          # adjust Y-axis labels
+          axis.text.y = element_text( margin = unit(c(t = 0, r = 2.5, b = 0, l = 0), "mm")),
+          # length of tick marks - negative sign places ticks inwards
+          axis.ticks.length = unit(-1.4, "mm"),
+          # width of tick marks in mm
+          axis.ticks = element_line(size = .8)))
+# t-test
+pre.measure = paste0('Pre.',x)
+post.measure = paste0('Post.',x)
+print(paste('paired t-test of',pre.measure, '&', post.measure))
+print(t.test(as.vector(as.matrix(Data[pre.measure])), as.vector(as.matrix(Data[post.measure])),  paired = TRUE))
+}
+
+
+singleboxplot = function(x){
+df = drop_na(dplyr::select(Data, x))
+print(ggplot(data = df, aes(x='', y=unlist(df), fill = 'blue')) +
+    geom_boxplot() +
+    geom_dotplot(binaxis='y', stackdir='center',  dotsize=.9, fill = 'grey')+
+ labs(title = paste(i))+
+  ylab('Score')+ xlab('')+
+  theme(legend.position = 'none')+
+   scale_y_continuous(limits = c(1,10),breaks=seq(2,10,2))+
+   theme_classic()+
+  theme(plot.title = element_text(color= 'black',face='bold',size=18))+
+   theme(axis.title.x = element_text(color= 'black',face='bold',size=18),
+        axis.text.x = element_text(color= 'black',face='bold',size=18))+
+  theme(axis.title.y = element_text(color= 'black',face='bold',size=18),
+        axis.text.y = element_text(color= 'black',face='bold',size=18))+
+ theme(legend.text = element_text( size = 18, face = "bold"))+
+theme(legend.position="none")+
+    theme(# adjust X-axis labels; also adjust their position using margin (acts like a bounding box)
+          # using margin was needed because of the inwards placement of ticks
+          # http://stackoverflow.com/questions/26367296/how-do-i-make-my-axis-ticks-face-inwards-in-ggplot2
+          axis.text.x = element_text( margin = unit(c(t = 2.5, r = 0, b = 0, l = 0), "mm")),
+          # adjust Y-axis labels
+          axis.text.y = element_text( margin = unit(c(t = 0, r = 2.5, b = 0, l = 0), "mm")),
+          # length of tick marks - negative sign places ticks inwards
+          axis.ticks.length = unit(-1.4, "mm"),
+          # width of tick marks in mm
+          axis.ticks = element_line(size = .8)))
+
+}
 ```
 
 
@@ -332,29 +402,22 @@ Data_Long = merge(Data_Long[c('Subject','Group', 'Measure', 'Score')], Data_Long
 rm(Data_Long2)
 
 
-Data_Long$Group = factor(gsub('\\.', '', Data_Long$Group), levels = c('Pre', 'Post'))
+Data_Long$Group = factor(gsub('\\.', '', Data_Long$Group), levels = c('Pre', 'Post')) # remove period, needs \\ to escape . function
+Data_Long$Measure = factor(Data_Long$Measure)
 ```
 
 ## Statstical Anlaysis
 
-### Survey Results Change
+### Survey and Diagnosis Results Change
 ```{r}
-# Valgus
-# plot
-dplyr::filter(Data_Long, Measure == 'Valgus') %>%
-  ggplot( aes(x=Measure, y=Score, group = Group, color = Group)) +
-    geom_boxplot() +
-    # geom_jitter( size=0.4) +
-    theme(classic,
-      legend.position="none") +
-    ggtitle("A boxplot with jitter") +
-    xlab("")
+myMeasures= as.character(unique(Data_Long$Measure))
+for (i in myMeasures) {
+  myboxplot(i)
+}
 
-t.test(Data$Pre.Valgus, Data$Pre.Valgus,  paired = TRUE)
+
 ```
 
-
-### Diagnosis Results Change
 
 ### Correlations
 
@@ -365,3 +428,13 @@ e.g. (preVarugs - PostVargus) correlate with (PreVargus.Avg - PostVargus.Avg)
 
 Pre= "PreviousThiel","PreviousDiagnostic" 
 post =  "GainedNew","Improved", "Effective","Retained","Transferable"
+
+```{r}
+myMeasures = c("PreviousThiel","PreviousDiagnostic", "GainedNew","Improved", "Effective","Retained","Transferable")
+for (i in myMeasures) {
+  singleboxplot(i)
+}
+# make post surveys in teal?
+
+```
+
