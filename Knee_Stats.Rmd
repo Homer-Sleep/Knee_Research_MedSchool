@@ -430,6 +430,14 @@ for (i in myMeasures) {
 ```
 
 
+### Survey and Diagnosis Results Grand Mean Change
+```{r}
+
+t.test(filter(Data_Long, Group == "Pre")$Score, filter(Data_Long, Group == "Post")$Score, paired = TRUE)
+
+
+```
+
 ### Correlations
 
 #### Measure performance change with survey performance change
