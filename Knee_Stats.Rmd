@@ -181,6 +181,8 @@ Station 6 - ACL, PCL
 Station 7 - ACL
 Station 8 - ACL, MCL
 
+## Add pre post comparison by station two bar graph, shows percentage of pre and post with t-test. 
+
 ```{r}
 PreData = read_excel('PreData.xlsx')
 # Diagnosis Key
@@ -435,6 +437,90 @@ for (i in myMeasures) {
 
 t.test(filter(Data_Long, Group == "Pre")$Score, filter(Data_Long, Group == "Post")$Score, paired = TRUE)
 
+t.test(dplyr::filter(Data_Long, Group == 'Pre', Measure %in% c('AD', 'Lach', 'Lever', 'PD', 'Valgus', 'Varus'))$Score, )
+
+
+```
+
+## Grand Mean of all Surveys of diagnosis technique and performance, stats and plot
+```{r}
+# Colors midnight and gold
+
+df = dplyr::filter(Data_Long, Measure %in% c('AD', 'Lach', 'Lever', 'PD', 'Valgus', 'Varus'))
+  means = aggregate(Score ~ Group, df, mean)
+  means$Score = round(means$Score, digits = 2)
+  StandD = aggregate(Score ~ Group, df, sd)
+  Pre_M_SD = '4.42 (2.35)'
+  Post_M_SD = '8.35 (1.66)'
+    p = ggplot(df, aes(x=Group, y=Score,  fill = Group)) +
+    geom_boxplot() +
+      scale_fill_manual(values = c('navyblue', 'gold'))+
+    labs(title = paste('Mean Survey Pre and Post'))+
+    annotate('text', x = 1, y = 0,  fontface = 'bold', label = Pre_M_SD)+
+    annotate('text', x = 2, y = 0,  fontface = 'bold', label = Post_M_SD)
+    
+   p = p + scale_y_continuous(limits = c(-.5,10),breaks=seq(0,10,2))
+   
+  p = p + theme_classic()+
+  theme(plot.title = element_text(color= 'black',face='bold',size=18))+
+   theme(axis.title.x = element_text(color= 'black',face='bold',size=18),
+        axis.text.x = element_text(color= 'black',face='bold',size=18))+
+  theme(axis.title.y = element_text(color= 'black',face='bold',size=18),
+        axis.text.y = element_text(color= 'black',face='bold',size=18))+
+ theme(legend.text = element_text( size = 18, face = "bold"))+
+theme(legend.position="none")+
+    theme(# adjust X-axis labels; also adjust their position using margin (acts like a bounding box)
+          # using margin was needed because of the inwards placement of ticks
+          # http://stackoverflow.com/questions/26367296/how-do-i-make-my-axis-ticks-face-inwards-in-ggplot2
+          axis.text.x = element_text( margin = unit(c(t = 2.5, r = 0, b = 0, l = 0), "mm")),
+          # adjust Y-axis labels
+          axis.text.y = element_text( margin = unit(c(t = 0, r = 2.5, b = 0, l = 0), "mm")),
+          # length of tick marks - negative sign places ticks inwards
+          axis.ticks.length = unit(-1.4, "mm"),
+          # width of tick marks in mm
+          axis.ticks = element_line(size = .8))
+print(p)
+
+t.test(dplyr::filter(df, Group == "Pre")$Score, dplyr::filter(df, Group == "Post")$Score, paired = TRUE)
+
+# Diagnosis section 
+df = dplyr::filter(Data_Long, Measure %in% c('AD.Avg', 'Lach.Avg', 'Lever.Avg', 'PD.Avg', 'Valgus.Avg', 'Varus.Avg'))
+  means = aggregate(Score ~ Group, df, mean)
+  means$Score = round(means$Score, digits = 2)
+  StandD = aggregate(Score ~ Group, df, sd)
+    Pre_M_SD = '0.84 (0.31)'
+  Post_M_SD = '0.81 (0.30)'
+  p = ggplot(df, aes(x=Group, y=Score,  fill = Group)) +
+    geom_boxplot() +
+      scale_fill_manual(values = c('navyblue', 'gold'))+
+    labs(title = paste('Mean Diagnosis Pre and Post'))+ 
+    annotate('text', x = 1, y = -.05,  fontface = 'bold', label = Pre_M_SD)+
+    annotate('text', x = 2, y = -.05,  fontface = 'bold', label = Post_M_SD)
+    
+   p = p + scale_y_continuous(limits = c(-.1,1),breaks=seq(0,1,.2))+
+             ylab('Percentage')
+
+  p = p + theme_classic()+
+  theme(plot.title = element_text(color= 'black',face='bold',size=18))+
+   theme(axis.title.x = element_text(color= 'black',face='bold',size=18),
+        axis.text.x = element_text(color= 'black',face='bold',size=18))+
+  theme(axis.title.y = element_text(color= 'black',face='bold',size=18),
+        axis.text.y = element_text(color= 'black',face='bold',size=18))+
+ theme(legend.text = element_text( size = 18, face = "bold"))+
+theme(legend.position="none")+
+    theme(# adjust X-axis labels; also adjust their position using margin (acts like a bounding box)
+          # using margin was needed because of the inwards placement of ticks
+          # http://stackoverflow.com/questions/26367296/how-do-i-make-my-axis-ticks-face-inwards-in-ggplot2
+          axis.text.x = element_text( margin = unit(c(t = 2.5, r = 0, b = 0, l = 0), "mm")),
+          # adjust Y-axis labels
+          axis.text.y = element_text( margin = unit(c(t = 0, r = 2.5, b = 0, l = 0), "mm")),
+          # length of tick marks - negative sign places ticks inwards
+          axis.ticks.length = unit(-1.4, "mm"),
+          # width of tick marks in mm
+          axis.ticks = element_line(size = .8))
+print(p)
+
+t.test(dplyr::filter(df, Group == "Pre")$Score, dplyr::filter(df, Group == "Post")$Score, paired = TRUE)
 
 ```
 
